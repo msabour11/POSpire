@@ -317,6 +317,9 @@ export default {
   box-shadow: none;
   height: auto !important;
   line-height: normal !important;
+  min-width: 0 !important;
+  flex-shrink: 1 !important;
+  overflow: hidden;
 }
 
 .stylish-brand:hover {
@@ -333,7 +336,9 @@ export default {
   border-radius: 10px;
   border: 1px solid rgba(0, 188, 212, 0.15);
   transition: all 0.3s ease;
-  width: fit-content;
+  max-width: 100%;
+  flex-shrink: 1;
+  min-width: 0;
 }
 
 .brand-container-modern:hover {
@@ -367,6 +372,8 @@ export default {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0;
+  flex-shrink: 1;
 }
 
 .client-brand-name {
@@ -375,6 +382,10 @@ export default {
   font-weight: 600;
   color: #34495E;
   line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 300px;
 }
 
 .client-logo {
@@ -745,6 +756,84 @@ export default {
 
 .v-navigation-drawer .v-icon {
   color: inherit !important;
+}
+
+/* Responsive Brand Styles */
+@media (max-width: 1200px) {
+  .client-brand-name {
+    max-width: 220px;
+    font-size: 1.2rem;
+  }
+
+  .brand-container-modern {
+    gap: 8px;
+    padding: 6px 12px;
+  }
+
+  .pospire-name {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 960px) {
+  .client-brand-name {
+    max-width: 180px;
+    font-size: 1.1rem;
+  }
+
+  .brand-divider {
+    margin: 0 8px;
+    height: 24px;
+  }
+
+  .pospire-icon {
+    width: 20px;
+    height: 20px;
+  }
+
+  .powered-by-text {
+    font-size: 0.55rem;
+  }
+
+  .pospire-pos,
+  .pospire-pire {
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .pospire-brand-section {
+    display: none;
+  }
+
+  .brand-divider {
+    display: none;
+  }
+
+  .client-brand-name {
+    max-width: 180px;
+    font-size: 1.2rem;
+  }
+
+  .brand-container-modern {
+    padding: 6px 12px;
+  }
+}
+
+@media (max-width: 600px) {
+  .client-brand-name {
+    max-width: 120px;
+    font-size: 1rem;
+  }
+
+  .client-logo {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  .user-info {
+    display: none;
+  }
 }
 </style>
 
