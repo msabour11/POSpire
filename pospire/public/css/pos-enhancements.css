@@ -2332,12 +2332,12 @@ body:has(.pos-page) .btn-toggle.active,
   --card-bg: var(--pospire-gradient-card);
   --section-bg: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
   --subsection-bg: linear-gradient(135deg, #fafbff 0%, #f0f4ff 100%);
-  --difference-bg: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+  --difference-bg: linear-gradient(135deg, #e0f7fa 0%, #b2ebf2 100%);
 
   /* Borders */
   --border-light: var(--pospire-border-gray);
   --border-subsection: #ddd6fe;
-  --border-difference: #bbf7d0;
+  --border-difference: #4DD0E1;
 
   /* Text Colors */
   --text-main: var(--pospire-deep-slate);

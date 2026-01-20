@@ -16,7 +16,7 @@
               <div class="section-header mb-4">
                 <v-card class="modern-section-card" variant="flat">
                   <v-card-title class="section-title">
-                    <v-icon class="section-icon" size="24">mdi-receipt-text</v-icon>
+                    <v-icon class="section-icon" size="24" color="#00BCD4">mdi-file-document-outline</v-icon>
                     <div class="section-text">
                       <div class="section-main-title">{{ __("Invoices") }}</div>
                       <div v-if="total_outstanding_amount" class="section-subtitle">
@@ -47,7 +47,7 @@
               </v-col>
               <v-col> </v-col>
               <v-col md="3" cols="12">
-                <v-btn block color="warning" theme="dark" @click="get_outstanding_invoices">{{ __("Search") }}</v-btn>
+                <v-btn block color="#00BCD4" class="text-white" @click="get_outstanding_invoices">{{ __("Search") }}</v-btn>
               </v-col>
             </v-row>
             <v-data-table
@@ -104,7 +104,7 @@
             <div class="section-header mb-4">
               <v-card class="modern-section-card" variant="flat">
                 <v-card-title class="section-title">
-                  <v-icon class="section-icon" size="24">mdi-credit-card-outline</v-icon>
+                  <v-icon class="section-icon" size="24" color="#00BCD4">mdi-credit-card-outline</v-icon>
                   <div class="section-text">
                     <div class="section-main-title">{{ __("Payments") }}</div>
                     <div v-if="total_unallocated_amount" class="section-subtitle">
@@ -157,7 +157,7 @@
             <div class="section-header mb-4">
               <v-card class="modern-section-card" variant="flat">
                 <v-card-title class="section-title">
-                  <v-icon class="section-icon" size="24">mdi-cellphone-nfc</v-icon>
+                  <v-icon class="section-icon" size="24" color="#00BCD4">mdi-cellphone-nfc</v-icon>
                   <div class="section-text">
                     <div class="section-main-title">{{ __("Search Mpesa Payments") }}</div>
                   </div>
@@ -180,7 +180,7 @@
               </v-col>
               <v-col> </v-col>
               <v-col md="3" cols="12">
-                <v-btn block color="warning" theme="dark" @click="get_draft_mpesa_payments_register">{{ __("Search")
+                <v-btn block color="#00BCD4" class="text-white" @click="get_draft_mpesa_payments_register">{{ __("Search")
                   }}</v-btn>
               </v-col>
             </v-row>
@@ -219,7 +219,7 @@
           <div class="totals-header mb-4">
             <v-card class="modern-section-card" variant="flat">
               <v-card-title class="section-title">
-                <v-icon class="section-icon" size="24">mdi-calculator</v-icon>
+                <v-icon class="section-icon" size="24" color="#00BCD4">mdi-calculator</v-icon>
                 <div class="section-text">
                   <div class="section-main-title">{{ __("Totals") }}</div>
                 </div>
@@ -295,7 +295,7 @@
             </div>
           </div>
           <div class="pb-6 pr-6" style="position: absolute; bottom: 0; width: 100%">
-            <v-btn block color="primary" theme="dark" @click="submit">
+            <v-btn block color="#00BCD4" class="text-white" @click="submit">
               {{ __("Submit") }}
             </v-btn>
           </div>
