@@ -6,13 +6,13 @@
           style="max-height: 94vh; height: 94vh">
           <div class="modern-payments-content">
             <!-- Customer Section -->
-            <div class="mb-6">
+            <div class="mb-6 customer-section-wrapper">
               <Customer></Customer>
               <PaidInvoice></PaidInvoice>
             </div>
 
             <!-- Invoices Section -->
-            <div class="mb-6">
+            <div class="mb-6 invoices-section-wrapper">
               <div class="section-header mb-4">
                 <v-card class="modern-section-card" variant="flat">
                   <v-card-title class="section-title">

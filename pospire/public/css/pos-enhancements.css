@@ -211,6 +211,95 @@ body:has(.pos-page) .pospire-section-header,
   z-index: 100 !important;
 }
 
+/* Dropdown overlay z-index */
+body:has(.pos-page) .v-overlay--active .v-overlay__content,
+.pos-page .v-overlay--active .v-overlay__content {
+  z-index: 2400 !important;
+}
+
+/* Payments page - fix v-autocomplete fieldset extending beyond bounds */
+body:has(.pos-page) .modern-payments-card .v-autocomplete,
+body:has(.pos-page) .modern-payments-card .v-select,
+.pos-page .modern-payments-card .v-autocomplete,
+.pos-page .modern-payments-card .v-select {
+  display: inline-flex !important;
+  width: 100% !important;
+}
+
+body:has(.pos-page) .modern-payments-card .v-input__control,
+.pos-page .modern-payments-card .v-input__control {
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body:has(.pos-page) .modern-payments-card .v-field,
+.pos-page .modern-payments-card .v-field {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  flex: 1 0 auto !important;
+}
+
+body:has(.pos-page) .modern-payments-card .v-field__outline,
+.pos-page .modern-payments-card .v-field__outline {
+  --v-field-border-width: 1px;
+  position: absolute !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  pointer-events: none !important;
+  contain: strict !important;
+}
+
+/* Payments page section-header - transparent background */
+body:has(.pos-page) .modern-payments-card .section-header,
+.pos-page .modern-payments-card .section-header,
+.modern-payments-card .section-header {
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0 0 1rem 0 !important;
+  border: none !important;
+  box-shadow: none !important;
+  position: relative !important;
+}
+
+/* Customer section - z-index: 10 (above Invoices) */
+body:has(.pos-page) .modern-payments-card .customer-section-wrapper,
+.pos-page .modern-payments-card .customer-section-wrapper,
+.modern-payments-card .customer-section-wrapper {
+  position: relative !important;
+  z-index: 10 !important;
+  margin-bottom: 2rem !important;
+}
+
+body:has(.pos-page) .modern-payments-card .customer-section-wrapper .v-input,
+.pos-page .modern-payments-card .customer-section-wrapper .v-input {
+  position: relative !important;
+  z-index: 10 !important;
+}
+
+/* Customer dropdown overlays - z-index: 100 */
+body:has(.pos-page) .modern-payments-card .v-autocomplete .v-overlay__content,
+body:has(.pos-page) .modern-payments-card .v-select .v-overlay__content,
+.pos-page .modern-payments-card .v-autocomplete .v-overlay__content,
+.pos-page .modern-payments-card .v-select .v-overlay__content {
+  z-index: 100 !important;
+}
+
+/* Invoices section - z-index: 1 (below Customer) */
+body:has(.pos-page) .modern-payments-card .invoices-section-wrapper,
+.pos-page .modern-payments-card .invoices-section-wrapper {
+  position: relative;
+  z-index: 1;
+}
+
+body:has(.pos-page) .modern-payments-card .section-header .modern-section-card,
+.pos-page .modern-payments-card .section-header .modern-section-card {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
 /* Section header title - SCOPED to POS pages */
 body:has(.pos-page) .section-header .v-card-title,
 body:has(.pos-page) .section-header-title,
