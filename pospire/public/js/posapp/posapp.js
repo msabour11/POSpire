@@ -23,6 +23,8 @@ function ensurePospireFontsLoaded() {
 	document.head.appendChild(link);
 }
 
+frappe.provide("frappe.PosApp");
+
 frappe.PosApp.posapp = class {
 	constructor({ parent }) {
 		this.$parent = $(document);
