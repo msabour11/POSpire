@@ -22,6 +22,8 @@ def ensure_test_company():
 	if companies:
 		return companies[0]
 
+	_ensure_warehouse_types()
+
 	doc = frappe.get_doc(
 		{
 			"doctype": "Company",
@@ -33,6 +35,13 @@ def ensure_test_company():
 	)
 	doc.insert(ignore_permissions=True, ignore_if_duplicate=True)
 	return doc.name
+
+
+def _ensure_warehouse_types():
+	"""Ensure required Warehouse Types exist (needed by ERPNext Company.on_update)."""
+	for wtype in ("Transit", "Store", "Rejected", "Reserved"):
+		if not frappe.db.exists("Warehouse Type", wtype):
+			frappe.get_doc({"doctype": "Warehouse Type", "name": wtype}).insert(ignore_permissions=True)
 
 
 def ensure_test_customer():

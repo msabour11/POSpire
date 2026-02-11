@@ -26,6 +26,7 @@ class TestPOSHardwareManagerSetting(FrappeTestCase):
 		self.assertEqual(doc.hardware_url, "http://localhost")
 		self.assertEqual(doc.port, 8080)
 
-		doc.hardware_url = original_url
+		# Restore original values (hardware_url is mandatory, so keep a valid value)
+		doc.hardware_url = original_url or "http://localhost"
 		doc.port = original_port
 		doc.save(ignore_permissions=True)
