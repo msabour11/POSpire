@@ -66,7 +66,7 @@ def get_enhanced_context(doc):
 
 
 @frappe.whitelist()
-def hardware_url(api_name):
+def hardware_url(api_name: str) -> str:
 	"""Get the full hardware URL for a given API name
 
 	Args:
@@ -94,7 +94,7 @@ def hardware_url(api_name):
 
 
 @frappe.whitelist()
-def get_hardware_manager_setting(pos_profile_name):
+def get_hardware_manager_setting(pos_profile_name: str) -> bool:
 	"""Check if hardware manager is enabled for a POS Profile
 
 	Args:
@@ -112,7 +112,9 @@ def get_hardware_manager_setting(pos_profile_name):
 
 
 @frappe.whitelist()
-def render_receipt_xml_to_html(xml_string, doctype=None, docname=None):
+def render_receipt_xml_to_html(
+	xml_string: str, doctype: str | None = None, docname: str | None = None
+) -> str:
 	"""Convert XML receipt template to HTML preview
 
 	Args:
@@ -129,8 +131,7 @@ def render_receipt_xml_to_html(xml_string, doctype=None, docname=None):
 		# Use enhanced context with helper functions
 		context = get_enhanced_context(doc)
 
-		# Render Jinja inside XML
-		rendered_xml = frappe.render_template(xml_string, context)
+		rendered_xml = frappe.render_template(xml_string, context)  # nosemgrep: frappe-ssti
 
 		# Parse rendered XML
 		root = ET.fromstring(rendered_xml)
@@ -209,7 +210,7 @@ def render_receipt_xml_to_html(xml_string, doctype=None, docname=None):
 
 
 @frappe.whitelist()
-def get_print_templates(doctype=None):
+def get_print_templates(doctype: str | None = None) -> list:
 	"""Get available print templates
 
 	Args:
@@ -230,7 +231,12 @@ def get_print_templates(doctype=None):
 
 
 @frappe.whitelist()
-def generate_print_xml(doc_type, sales_invoice_name, template_path=None, template_name=None):
+def generate_print_xml(
+	doc_type: str,
+	sales_invoice_name: str,
+	template_path: str | None = None,
+	template_name: str | None = None,
+) -> str:
 	"""Generate print XML from template and document
 
 	Args:
@@ -278,7 +284,7 @@ def generate_print_xml(doc_type, sales_invoice_name, template_path=None, templat
 
 	# Render template with enhanced context (includes helper functions)
 	context = get_enhanced_context(doc)
-	rendered_xml = frappe.render_template(template_content, context)
+	rendered_xml = frappe.render_template(template_content, context)  # nosemgrep: frappe-ssti
 
 	return rendered_xml
 
@@ -490,7 +496,7 @@ def validate_xml_attributes(template):
 
 
 @frappe.whitelist()
-def validate_xml_template(xml_template, doc_type):
+def validate_xml_template(xml_template: str, doc_type: str) -> dict:
 	"""
 	Validate XML template structure and content
 

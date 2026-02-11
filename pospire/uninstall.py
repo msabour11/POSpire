@@ -13,12 +13,10 @@ def clear_custom_fields_and_properties():
 			if filters:
 				for filter in filters:
 					frappe.db.delete("Custom Field", filter)
-					print("Deleted Custom Fields: ", filter)
 		if fixture.get("doctype") == "Property Setter":
 			filters = fixture.get("filters")
 			if filters:
 				for filter in filters:
 					frappe.db.delete("Property Setter", filter)
-					print("Deleted Property Setter: ", filter)
 
-	frappe.db.commit()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit -- uninstall runs outside request lifecycle

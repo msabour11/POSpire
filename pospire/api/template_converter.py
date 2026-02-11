@@ -19,7 +19,11 @@ JINJA_PLACEHOLDER_SUFFIX = "___"
 
 
 @frappe.whitelist()
-def convert_print_format_to_xml(print_format_name=None, html_content=None, doc_type=None):
+def convert_print_format_to_xml(
+	print_format_name: str | None = None,
+	html_content: str | None = None,
+	doc_type: str | None = None,
+) -> dict:
 	"""
 	Convert a Frappe Print Format or HTML content to thermal printer XML template
 
@@ -481,7 +485,7 @@ class HTMLToXMLConverter:
 
 
 @frappe.whitelist()
-def get_print_formats_for_doctype(doc_type):
+def get_print_formats_for_doctype(doc_type: str) -> list:
 	"""Get list of available Print Formats for a DocType"""
 	if not doc_type:
 		return []

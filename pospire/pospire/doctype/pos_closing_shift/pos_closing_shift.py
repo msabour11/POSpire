@@ -24,10 +24,8 @@ class POSClosingShift(Document):
 
 		if user:
 			frappe.throw(
-				_(
-					"POS Closing Shift {} against {} between selected period".format(
-						frappe.bold("already exists"), frappe.bold(self.user)
-					)
+				_("POS Closing Shift {0} against {1} between selected period").format(
+					frappe.bold("already exists"), frappe.bold(self.user)
 				),
 				title=_("Invalid Period"),
 			)
@@ -74,6 +72,7 @@ class POSClosingShift(Document):
 	@frappe.whitelist()
 	def get_payment_reconciliation_details(self):
 		currency = frappe.get_cached_value("Company", self.company, "default_currency")
+		# nosemgrep: frappe-ssti — hardcoded template path within the app, not user input
 		return frappe.render_template(
 			"pospire/pospire/doctype/pos_closing_shift/closing_shift_details.html",
 			{"data": self, "currency": currency},
@@ -81,13 +80,13 @@ class POSClosingShift(Document):
 
 
 @frappe.whitelist()
-def get_cashiers(doctype, txt, searchfield, start, page_len, filters):
+def get_cashiers(doctype: str, txt: str, searchfield: str, start: int, page_len: int, filters: dict) -> list:
 	cashiers_list = frappe.get_all("POS Profile User", filters=filters, fields=["user"])
 	return [c["user"] for c in cashiers_list]
 
 
 @frappe.whitelist()
-def get_pos_invoices(pos_opening_shift):
+def get_pos_invoices(pos_opening_shift: str) -> list:
 	submit_printed_invoices(pos_opening_shift)
 	data = frappe.db.sql(
 		"""
@@ -108,7 +107,7 @@ def get_pos_invoices(pos_opening_shift):
 
 
 @frappe.whitelist()
-def get_payments_entries(pos_opening_shift):
+def get_payments_entries(pos_opening_shift: str) -> list:
 	return frappe.get_all(
 		"Payment Entry",
 		filters={
@@ -128,7 +127,7 @@ def get_payments_entries(pos_opening_shift):
 
 
 @frappe.whitelist()
-def make_closing_shift_from_opening(opening_shift):
+def make_closing_shift_from_opening(opening_shift: str):
 	opening_shift = json.loads(opening_shift)
 	submit_printed_invoices(opening_shift.get("name"))
 	closing_shift = frappe.new_doc("POS Closing Shift")
@@ -252,7 +251,7 @@ def make_closing_shift_from_opening(opening_shift):
 
 
 @frappe.whitelist()
-def submit_closing_shift(closing_shift):
+def submit_closing_shift(closing_shift: str) -> str:
 	closing_shift = json.loads(closing_shift)
 	closing_shift_doc = frappe.get_doc(closing_shift)
 	closing_shift_doc.flags.ignore_permissions = True

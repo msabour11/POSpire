@@ -66,7 +66,7 @@ def get_columns():
 def get_data(filters):
 	conditions = get_conditions(filters)
 
-	query = f"""
+	query = """
         SELECT
             new_invoice.name as new_invoice,
             new_invoice.posting_date as invoice_date,
@@ -93,9 +93,9 @@ def get_data(filters):
             ON credit_note.name = jea_debit.reference_name
             AND credit_note.is_return = 1
         WHERE je.docstatus = 1
-            {conditions}
-        ORDER BY je.posting_date DESC, je.creation DESC
-    """
+            """
+	query += conditions
+	query += " ORDER BY je.posting_date DESC, je.creation DESC"
 
 	data = frappe.db.sql(query, filters, as_dict=1)
 	return data

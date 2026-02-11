@@ -37,7 +37,7 @@ from pospire.pospire.doctype.pos_coupon.pos_coupon import check_coupon_code
 
 
 @frappe.whitelist()
-def get_opening_dialog_data():
+def get_opening_dialog_data() -> dict:
 	data = {}
 	data["companies"] = frappe.get_list("Company", limit_page_length=0, order_by="name")
 	data["pos_profiles_data"] = frappe.get_list(
@@ -69,7 +69,7 @@ def get_opening_dialog_data():
 
 
 @frappe.whitelist()
-def create_opening_voucher(pos_profile, company, balance_details):
+def create_opening_voucher(pos_profile: str, company: str, balance_details: str) -> dict:
 	balance_details = json.loads(balance_details)
 
 	new_pos_opening = frappe.get_doc(
@@ -93,7 +93,7 @@ def create_opening_voucher(pos_profile, company, balance_details):
 
 
 @frappe.whitelist()
-def check_opening_shift(user):
+def check_opening_shift(user: str):
 	open_vouchers = frappe.db.get_all(
 		"POS Opening Shift",
 		filters={
@@ -122,7 +122,13 @@ def update_opening_shift_data(data, pos_profile):
 
 
 @frappe.whitelist()
-def get_items(pos_profile, price_list=None, item_group="", search_value="", customer=None):
+def get_items(
+	pos_profile: str,
+	price_list: str | None = None,
+	item_group: str = "",
+	search_value: str = "",
+	customer: str | None = None,
+) -> list:
 	_pos_profile = json.loads(pos_profile)
 	ttl = _pos_profile.get("posa_server_cache_duration")
 	if ttl:
@@ -164,7 +170,7 @@ def get_items(pos_profile, price_list=None, item_group="", search_value="", cust
 
 			condition += get_seearch_items_conditions(item_code, serial_no, batch_no, barcode)
 			if item_group:
-				condition += f" AND item_group like '%{item_group}%'"
+				condition += " AND item_group like {}".format(frappe.db.escape("%" + item_group + "%"))
 			limit = f" LIMIT {search_limit}"
 
 		if not posa_show_template_items:
@@ -172,8 +178,9 @@ def get_items(pos_profile, price_list=None, item_group="", search_value="", cust
 
 		result = []
 
-		items_data = frappe.db.sql(
-			f"""
+		items_data = frappe.db.sql(  # nosemgrep: frappe-sql-format-injection
+			# conditions are built from frappe.db.escape() values, not raw user input
+			"""
             SELECT
                 name AS item_code,
                 item_name,
@@ -195,11 +202,13 @@ def get_items(pos_profile, price_list=None, item_group="", search_value="", cust
                 disabled = 0
                     AND is_sales_item = 1
                     AND is_fixed_asset = 0
-                    {condition}
+                    """
+			+ condition
+			+ """
             ORDER BY
                 item_name asc
-            {limit}
-                """,
+            """
+			+ limit,
 			as_dict=1,
 		)
 
@@ -323,17 +332,23 @@ def get_item_group_condition(pos_profile):
 
 def get_root_of(doctype):
 	"""Get root element of a DocType with a tree structure"""
-	result = frappe.db.sql(
-		f"""select t1.name from `tab{doctype}` t1 where
+	# Validate doctype exists to prevent SQL injection via table name
+	if not frappe.db.exists("DocType", doctype):
+		frappe.throw(_("Invalid DocType: {0}").format(doctype))
+
+	result = frappe.db.sql(  # nosemgrep: frappe-sql-format-injection
+		# table name interpolation cannot use parameterized queries;
+		# doctype is validated above against the DocType table
+		"""select t1.name from `tab{doctype}` t1 where
 		(select count(*) from `tab{doctype}` t2 where
 			t2.lft < t1.lft and t2.rgt > t1.rgt) = 0
-		and t1.rgt > t1.lft"""
+		and t1.rgt > t1.lft""".format(doctype=doctype)  # noqa: UP032
 	)
 	return result[0][0] if result else None
 
 
 @frappe.whitelist()
-def get_items_groups():
+def get_items_groups() -> list:
 	return frappe.db.sql(
 		"""
         select name
@@ -361,10 +376,15 @@ def get_customer_groups(pos_profile):
 
 
 def get_child_nodes(group_type, root):
+	if not frappe.db.exists("DocType", group_type):
+		frappe.throw(_("Invalid DocType: {0}").format(group_type))
+
 	lft, rgt = frappe.db.get_value(group_type, root, ["lft", "rgt"])
-	return frappe.db.sql(
-		f""" Select name, lft, rgt from `tab{group_type}` where
-			lft >= {lft} and rgt <= {rgt} order by lft""",
+	return frappe.db.sql(  # nosemgrep: frappe-sql-format-injection
+		# table name interpolation cannot use %s; group_type is validated above
+		""" Select name, lft, rgt from `tab{group_type}` where
+			lft >= %s and rgt <= %s order by lft""".format(group_type=group_type),  # noqa: UP032
+		(lft, rgt),
 		as_dict=1,
 	)
 
@@ -379,7 +399,7 @@ def get_customer_group_condition(pos_profile):
 
 
 @frappe.whitelist()
-def get_customer_names(pos_profile):
+def get_customer_names(pos_profile: str) -> list:
 	_pos_profile = json.loads(pos_profile)
 	ttl = _pos_profile.get("posa_server_cache_duration")
 	if ttl:
@@ -393,11 +413,14 @@ def get_customer_names(pos_profile):
 		pos_profile = json.loads(pos_profile)
 		condition = ""
 		condition += get_customer_group_condition(pos_profile)
-		customers = frappe.db.sql(
-			f"""
+		customers = frappe.db.sql(  # nosemgrep: frappe-sql-format-injection
+			# conditions are built from frappe.db.escape() values, not raw user input
+			"""
             SELECT name, mobile_no, email_id, tax_id, customer_name, primary_address
             FROM `tabCustomer`
-            WHERE {condition}
+            WHERE """
+			+ condition
+			+ """
             ORDER by name
             """,
 			as_dict=1,
@@ -411,7 +434,7 @@ def get_customer_names(pos_profile):
 
 
 @frappe.whitelist()
-def get_sales_person_names():
+def get_sales_person_names() -> list:
 	sales_persons = frappe.get_list(
 		"Sales Person",
 		filters={"enabled": 1},
@@ -452,7 +475,7 @@ def add_taxes_from_tax_template(item, parent_doc):
 
 
 @frappe.whitelist()
-def update_invoice_from_order(data):
+def update_invoice_from_order(data: str):
 	data = json.loads(data)
 	invoice_doc = frappe.get_doc("Sales Invoice", data.get("name"))
 	invoice_doc.update(data)
@@ -461,7 +484,7 @@ def update_invoice_from_order(data):
 
 
 @frappe.whitelist()
-def update_invoice(data):
+def update_invoice(data: str):
 	data = json.loads(data)
 	if data.get("name"):
 		invoice_doc = frappe.get_doc("Sales Invoice", data.get("name"))
@@ -666,7 +689,7 @@ def update_invoice(data):
 
 
 @frappe.whitelist()
-def submit_invoice(invoice, data):
+def submit_invoice(invoice: str, data: str) -> dict:
 	data = json.loads(data)
 	invoice = json.loads(invoice)
 	invoice_doc = frappe.get_doc("Sales Invoice", invoice.get("name"))
@@ -917,7 +940,7 @@ def submit_in_background_job(kwargs):
 
 
 @frappe.whitelist()
-def get_available_credit(customer, company):
+def get_available_credit(customer: str, company: str) -> list:
 	"""
 	Get available customer credit from two sources:
 	1. Credit Notes (Return Invoices with outstanding credit)
@@ -976,7 +999,7 @@ def get_available_credit(customer, company):
 
 
 @frappe.whitelist()
-def get_draft_invoices(pos_opening_shift):
+def get_draft_invoices(pos_opening_shift: str) -> list:
 	invoices_list = frappe.get_list(
 		"Sales Invoice",
 		filters={
@@ -995,7 +1018,7 @@ def get_draft_invoices(pos_opening_shift):
 
 
 @frappe.whitelist()
-def delete_invoice(invoice):
+def delete_invoice(invoice: str) -> str:
 	if frappe.get_value("Sales Invoice", invoice, "posa_is_printed"):
 		frappe.throw(_("This invoice {0} cannot be deleted").format(invoice))
 	frappe.delete_doc("Sales Invoice", invoice, force=1)
@@ -1003,7 +1026,7 @@ def delete_invoice(invoice):
 
 
 @frappe.whitelist()
-def get_items_details(pos_profile, items_data):
+def get_items_details(pos_profile: str, items_data: str) -> list:
 	_pos_profile = json.loads(pos_profile)
 	ttl = _pos_profile.get("posa_server_cache_duration")
 	if ttl:
@@ -1088,7 +1111,9 @@ def get_items_details(pos_profile, items_data):
 
 
 @frappe.whitelist()
-def get_item_detail(item, doc=None, warehouse=None, price_list=None):
+def get_item_detail(
+	item: str, doc: str | None = None, warehouse: str | None = None, price_list: str | None = None
+):
 	item = json.loads(item)
 	today = nowdate()
 	item_code = item.get("item_code")
@@ -1146,21 +1171,21 @@ def get_stock_availability(item_code, warehouse):
 
 @frappe.whitelist()
 def create_customer(
-	customer_id,
-	customer_name,
-	company,
-	pos_profile_doc,
-	tax_id=None,
-	mobile_no=None,
-	email_id=None,
-	referral_code=None,
-	birthday=None,
-	customer_group=None,
-	territory=None,
-	customer_type=None,
-	gender=None,
-	method="create",
-):
+	customer_id: str,
+	customer_name: str,
+	company: str,
+	pos_profile_doc: str,
+	tax_id: str | None = None,
+	mobile_no: str | None = None,
+	email_id: str | None = None,
+	referral_code: str | None = None,
+	birthday: str | None = None,
+	customer_group: str | None = None,
+	territory: str | None = None,
+	customer_type: str | None = None,
+	gender: str | None = None,
+	method: str = "create",
+) -> dict | None:
 	pos_profile = json.loads(pos_profile_doc)
 	if method == "create":
 		is_exist = frappe.db.exists("Customer", {"customer_name": customer_name})
@@ -1212,7 +1237,7 @@ def create_customer(
 
 
 @frappe.whitelist()
-def get_items_from_barcode(selling_price_list, currency, barcode):
+def get_items_from_barcode(selling_price_list: str, currency: str, barcode: str):
 	search_item = frappe.get_all(
 		"Item Barcode",
 		filters={"barcode": barcode},
@@ -1281,7 +1306,7 @@ def get_items_from_barcode(selling_price_list, currency, barcode):
 
 
 @frappe.whitelist()
-def set_customer_info(customer, fieldname, value=""):
+def set_customer_info(customer: str, fieldname: str, value: str = ""):
 	if fieldname == "loyalty_program":
 		frappe.db.set_value("Customer", customer, "loyalty_program", value)
 
@@ -1316,7 +1341,7 @@ def set_customer_info(customer, fieldname, value=""):
 
 
 @frappe.whitelist()
-def search_invoices_with_items(invoice_name, company):
+def search_invoices_with_items(invoice_name: str, company: str) -> list:
 	invoices_list = frappe.get_list(
 		"Sales Invoice",
 		filters={
@@ -1336,7 +1361,7 @@ def search_invoices_with_items(invoice_name, company):
 
 
 @frappe.whitelist()
-def get_invoice_return_status(invoice_name):
+def get_invoice_return_status(invoice_name: str) -> list:
 	"""
 	Get return status for each line item in an invoice.
 
@@ -1411,7 +1436,7 @@ def get_invoice_return_status(invoice_name):
 
 
 @frappe.whitelist()
-def search_invoices_for_return(invoice_name, company):
+def search_invoices_for_return(invoice_name: str | None, company: str) -> list:
 	"""
 	Search for invoices available for return.
 
@@ -1462,7 +1487,7 @@ def search_invoices_for_return(invoice_name, company):
 
 
 @frappe.whitelist()
-def search_orders(company, currency, order_name=None):
+def search_orders(company: str, currency: str, order_name: str | None = None) -> list:
 	filters = {
 		"billing_status": ["in", ["Not Billed", "Partly Billed"]],
 		"docstatus": 1,
@@ -1508,7 +1533,7 @@ def get_app_branch(app):
 
 
 @frappe.whitelist()
-def get_offers(profile):
+def get_offers(profile: str) -> list:
 	pos_profile = frappe.get_doc("POS Profile", profile)
 	company = pos_profile.company
 	warehouse = pos_profile.warehouse
@@ -1540,9 +1565,9 @@ def get_offers(profile):
 
 
 @frappe.whitelist()
-def get_customer_addresses(customer):
+def get_customer_addresses(customer: str) -> list:
 	return frappe.db.sql(
-		f"""
+		"""
         SELECT
             address.name,
             address.address_line1,
@@ -1556,29 +1581,32 @@ def get_customer_addresses(customer):
         INNER JOIN `tabDynamic Link` AS link
 				ON address.name = link.parent
         WHERE link.link_doctype = 'Customer'
-            AND link.link_name = '{customer}'
+            AND link.link_name = %s
             AND address.disabled = 0
         ORDER BY address.name
         """,
+		(customer,),
 		as_dict=1,
 	)
 
 
 @frappe.whitelist()
-def make_address(args):
-	args = json.loads(args)
+def make_address(address_data: str):
+	address_data = json.loads(address_data)
 	address = frappe.get_doc(
 		{
 			"doctype": "Address",
-			"address_title": args.get("name"),
-			"address_line1": args.get("address_line1"),
-			"address_line2": args.get("address_line2"),
-			"city": args.get("city"),
-			"state": args.get("state"),
-			"pincode": args.get("pincode"),
-			"country": args.get("country"),
+			"address_title": address_data.get("name"),
+			"address_line1": address_data.get("address_line1"),
+			"address_line2": address_data.get("address_line2"),
+			"city": address_data.get("city"),
+			"state": address_data.get("state"),
+			"pincode": address_data.get("pincode"),
+			"country": address_data.get("country"),
 			"address_type": "Shipping",
-			"links": [{"link_doctype": args.get("doctype"), "link_name": args.get("customer")}],
+			"links": [
+				{"link_doctype": address_data.get("doctype"), "link_name": address_data.get("customer")}
+			],
 		}
 	).insert()
 
@@ -1641,7 +1669,7 @@ def get_item_optional_attributes(item_code):
 
 
 @frappe.whitelist()
-def get_item_attributes(item_code):
+def get_item_attributes(item_code: str) -> list:
 	attributes = frappe.db.get_all(
 		"Item Variant Attribute",
 		fields=["attribute"],
@@ -1666,7 +1694,7 @@ def get_item_attributes(item_code):
 
 
 @frappe.whitelist()
-def create_payment_request(doc):
+def create_payment_request(doc: str):
 	doc = json.loads(doc)
 	for pay in doc.get("payments"):
 		if pay.get("type") == "Phone":
@@ -1709,10 +1737,10 @@ def get_new_payment_request(doc, mop):
 	return make_payment_request(**args)
 
 
-def get_payment_gateway_account(args):
+def get_payment_gateway_account(gateway_filters):
 	return frappe.db.get_value(
 		"Payment Gateway Account",
-		args,
+		gateway_filters,
 		["name", "payment_gateway", "payment_account", "message"],
 		as_dict=1,
 	)
@@ -1833,7 +1861,7 @@ def make_payment_request(**args):
 			pr.submit()
 
 	if args.order_type == "Shopping Cart":
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — Shopping Cart redirect requires committed data
 		frappe.local.response["type"] = "redirect"
 		frappe.local.response["location"] = pr.get_payment_url()
 
@@ -1859,13 +1887,13 @@ def get_amount(ref_doc, payment_account=None):
 
 
 @frappe.whitelist()
-def get_pos_coupon(coupon, customer, company):
+def get_pos_coupon(coupon: str, customer: str, company: str):
 	res = check_coupon_code(coupon, customer, company)
 	return res
 
 
 @frappe.whitelist()
-def get_active_gift_coupons(customer, company):
+def get_active_gift_coupons(customer: str, company: str) -> list:
 	coupons = []
 	coupons_data = frappe.get_all(
 		"POS Coupon",
@@ -1883,7 +1911,7 @@ def get_active_gift_coupons(customer, company):
 
 
 @frappe.whitelist()
-def get_customer_info(customer):
+def get_customer_info(customer: str) -> dict:
 	customer = frappe.get_doc("Customer", customer)
 
 	res = {"loyalty_points": None, "conversion_factor": None}
@@ -1924,7 +1952,12 @@ def get_company_domain(company):
 
 
 @frappe.whitelist()
-def get_applicable_delivery_charges(company, pos_profile, customer, shipping_address_name=None):
+def get_applicable_delivery_charges(
+	company: str,
+	pos_profile: str,
+	customer: str,
+	shipping_address_name: str | None = None,
+) -> list:
 	return _get_applicable_delivery_charges(company, pos_profile, customer, shipping_address_name)
 
 
@@ -1957,13 +1990,12 @@ def auto_create_items():
 				"standard_rate": 100 + i,
 			}
 		)
-		print(f"Creating Item: {item_code}")
 		item.insert(ignore_permissions=True)
-		frappe.db.commit()
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit — batch item creation utility; commit per iteration to avoid losing progress
 
 
 @frappe.whitelist()
-def search_serial_or_batch_or_barcode_number(search_value, search_serial_no):
+def search_serial_or_batch_or_barcode_number(search_value: str, search_serial_no: str) -> dict:
 	# search barcode no
 	barcode_data = frappe.db.get_value(
 		"Item Barcode",
@@ -1998,19 +2030,19 @@ def get_seearch_items_conditions(item_code, serial_no, batch_no, barcode):
 
 
 @frappe.whitelist()
-def create_sales_invoice_from_order(sales_order):
+def create_sales_invoice_from_order(sales_order: str):
 	sales_invoice = make_sales_invoice(sales_order, ignore_permissions=True)
 	sales_invoice.save()
 	return sales_invoice
 
 
 @frappe.whitelist()
-def delete_sales_invoice(sales_invoice):
+def delete_sales_invoice(sales_invoice: str):
 	frappe.delete_doc("Sales Invoice", sales_invoice)
 
 
 @frappe.whitelist()
-def get_sales_invoice_child_table(sales_invoice, sales_invoice_item):
+def get_sales_invoice_child_table(sales_invoice: str, sales_invoice_item: str):
 	parent_doc = frappe.get_doc("Sales Invoice", sales_invoice)
 	child_doc = frappe.get_doc("Sales Invoice Item", {"parent": parent_doc.name, "name": sales_invoice_item})
 	return child_doc

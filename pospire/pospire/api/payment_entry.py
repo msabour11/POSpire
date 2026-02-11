@@ -60,10 +60,12 @@ def create_payment_entry(
 	pe.party_type = party_type
 	pe.party = customer
 
-	pe.paid_from = party_account if payment_type == "Receive" else bank.account
+	pe.paid_from = party_account if payment_type == "Receive" else bank.account  # nosemgrep: useless-eqeq
 	pe.paid_to = party_account if payment_type == "Pay" else bank.account
 	pe.paid_from_account_currency = (
-		party_account_currency if payment_type == "Receive" else bank.account_currency
+		party_account_currency
+		if payment_type == "Receive"  # nosemgrep: useless-eqeq
+		else bank.account_currency
 	)
 	pe.paid_to_account_currency = party_account_currency if payment_type == "Pay" else bank.account_currency
 	pe.paid_amount = paid_amount
@@ -130,9 +132,13 @@ def set_paid_amount_and_received_amount(
 
 
 @frappe.whitelist()
-def get_outstanding_invoices(company, currency, customer=None, pos_profile_name=None, include_paid="false"):
-	print(company + " " + currency + " " + include_paid)
-	print(get_party_account("Customer", customer, company))
+def get_outstanding_invoices(
+	company: str,
+	currency: str,
+	customer: str | None = None,
+	pos_profile_name: str | None = None,
+	include_paid: str = "false",
+) -> list:
 	if customer:
 		if include_paid == "false":
 			precision = frappe.get_precision("Sales Invoice", "outstanding_amount") or 2
@@ -221,7 +227,9 @@ def get_outstanding_invoices(company, currency, customer=None, pos_profile_name=
 
 
 @frappe.whitelist()
-def get_unallocated_payments(customer, company, currency, mode_of_payment=None):
+def get_unallocated_payments(
+	customer: str, company: str, currency: str, mode_of_payment: str | None = None
+) -> list:
 	filters = {
 		"party": customer,
 		"company": company,
@@ -252,7 +260,7 @@ def get_unallocated_payments(customer, company, currency, mode_of_payment=None):
 
 
 @frappe.whitelist()
-def process_pos_payment(payload):
+def process_pos_payment(payload: str) -> dict:
 	data = json.loads(payload)
 	data = frappe._dict(data)
 	if not data.pos_profile.get("posa_use_pos_awesome_payments"):
@@ -434,7 +442,7 @@ def process_pos_payment(payload):
 
 
 @frappe.whitelist()
-def get_available_pos_profiles(company, currency):
+def get_available_pos_profiles(company: str, currency: str) -> list:
 	pos_profiles_list = frappe.get_list(
 		"POS Profile",
 		filters={"disabled": 0, "company": company, "currency": currency},

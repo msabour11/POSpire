@@ -52,7 +52,7 @@ export default {
 					indicator: res.ok ? "green" : "red",
 				});
 			} catch (err) {
-				frappe.msgprint("Error: Printer not started or not configured");
+				frappe.msgprint(__("Error: Printer not started or not configured"));
 				console.error("Error: " + (err.message || err));
 			}
 		},

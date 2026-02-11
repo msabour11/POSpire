@@ -96,7 +96,7 @@ export default {
 			frappe.call({
 				method: "pospire.pospire.api.posapp.make_address",
 				args: {
-					args: this.address,
+					address_data: this.address,
 				},
 				callback: (r) => {
 					if (!r.exc) {
