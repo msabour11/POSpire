@@ -9,6 +9,8 @@ app_color = "grey"
 app_email = "rajit@example.com"
 app_license = "GPLv3"
 
+POSPIRE_COLOR = "#2563EB"
+
 # Includes in <head>
 # ------------------
 
@@ -273,13 +275,12 @@ fixtures = [
 		],
 	},
 ]
-POSPIRE_COLOR = "#2563EB"
-add_to_apps_screen=[
-    {
-        "name":"POSpire",
-        "title":"POSpire",
-        "route":"/app/pospire",
-        "color":POSPIRE_COLOR,
-        "logo":"/assets/pospire/images/pospire_logo.png"
-    }
+add_to_apps_screen = [
+	{
+		"name": "POSpire",
+		"title": "POSpire",
+		"route": "/app/pospire",
+		"color": POSPIRE_COLOR,
+		"logo": "/assets/pospire/images/app-128x128-rounded.png",
+	}
 ]

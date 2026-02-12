@@ -493,6 +493,17 @@ def update_invoice(data: str):
 		data.pop("customer_name", None)
 		data.pop("title", None)
 		invoice_doc.update(data)
+
+		# Set customer on draft invoices after update() to avoid overwrite
+		if invoice_doc.docstatus == 0 and incoming_customer:
+			if not frappe.db.exists("Customer", incoming_customer):
+				frappe.throw(_("Invalid customer: {0}").format(incoming_customer))
+
+			invoice_doc.customer = incoming_customer
+			invoice_doc.customer_name = frappe.get_cached_value(
+				"Customer", incoming_customer, "customer_name"
+			)
+			invoice_doc.title = invoice_doc.customer_name
 	else:
 		invoice_doc = frappe.get_doc(data)
 
@@ -689,19 +700,8 @@ def update_invoice(data: str):
 		invoice_doc.set_posting_time = 1
 
 	invoice_doc.save()
-
-	if invoice_doc.docstatus == 0 and incoming_customer:
-		if not frappe.db.exists("Customer", incoming_customer):
-			frappe.throw(_("Invalid customer: {0}").format(incoming_customer))
-
-		invoice_doc.customer = incoming_customer
-		invoice_doc.customer_name = frappe.get_cached_value(
-			"Customer", incoming_customer, "customer_name"
-		)
-		invoice_doc.title = invoice_doc.customer_name
-		invoice_doc.save()
-
 	return invoice_doc
+
 
 @frappe.whitelist()
 def submit_invoice(invoice: str, data: str) -> dict:

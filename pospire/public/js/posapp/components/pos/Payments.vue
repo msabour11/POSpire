@@ -1572,4 +1572,10 @@ export default {
 .payment-method-btn .v-icon {
 	color: #00bcd4 !important; /* Vibrant Teal for icons */
 }
+
+/* Compact toggle switches for payment options */
+.small-switch {
+	transform: scale(0.85);
+	transform-origin: left center;
+}
 </style>
